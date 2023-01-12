@@ -1,4 +1,3 @@
-import {IconName} from "@fortawesome/fontawesome-common-types"
 import {formatMinutes, formatSeconds} from "../../utils/format-time";
 import {RecorderControlsProps} from "types/recorder";
 import "./styles.css";

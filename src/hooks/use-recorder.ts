@@ -1,6 +1,7 @@
 import {useState, useEffect} from "react";
 import {startRecording, saveRecording} from "handlers/recorder-controls";
 import {Recorder, Interval, AudioTrack, MediaRecorderEvent} from "types/recorder";
+import {saveAs} from "file-saver"
 
 const initialState: Recorder = {
     recordingMinutes: 0,
@@ -13,11 +14,18 @@ const initialState: Recorder = {
 
 export default function useRecorder() {
     const [recorderState, setRecorderState] = useState<Recorder>(initialState);
+    const audioExtension = "audio.webm"
+    const audioFormat = "audio/webm"
 
     async function postBlobFile(url: URL, blob: Blob) {
         try {
+
+            let x = Math.floor((Math.random() * 100) + 1);
+            saveAs(blob, "file" + x + audioExtension);
+
             const formData = new FormData();
             formData.append('file', blob);
+            formData.append('Content-Type', 'multipart/form-data');
             const options = {
                 method: 'POST',
                 body: formData
@@ -71,12 +79,12 @@ export default function useRecorder() {
 
     useEffect(() => {
         setRecorderState((prevState) => {
-            if (prevState.mediaStream)
+            if (prevState.mediaStream) {
                 return {
                     ...prevState,
-                    mediaRecorder: new MediaRecorder(prevState.mediaStream),
+                    mediaRecorder: new MediaRecorder(prevState.mediaStream, {mimeType: audioFormat + ";codecs=opus"}),
                 };
-            else return prevState;
+            } else return prevState;
         });
     }, [recorderState.mediaStream]);
 
@@ -88,30 +96,17 @@ export default function useRecorder() {
             recorder.start();
 
             recorder.ondataavailable = (e: MediaRecorderEvent) => {
+                console.log("onDataAvailable")
                 chunks.push(e.data);
             };
 
             recorder.onstop = async () => {
                 // const blob = new Blob(chunks, {type: "audio/ogg; codecs=opus"});
-                const blob = new Blob(chunks, {type: 'audio/wav'});
+                // const blob = new Blob(chunks, {type: "audio/mp3; codecs=opus"});
+                const blob = new Blob(chunks, {type: "audio/" + audioFormat + ";codecs=opus"});
                 console.log("-----------------blobData-----------------")
                 console.log(blob)
                 chunks = [];
-
-
-
-                // const WaveformData = require('waveform-data');
-                // const fileReader = new FileReader();
-                //
-                // fileReader.onload = function () {
-                //     const wav = new WaveformData(fileReader.result, WaveformData.adapters.object);
-                //     const wavBlob = new Blob([wav.toWav()], {type: 'audio/wav'});
-                //     console.log("wav file 'wavBlob'")
-                //     console.log(wavBlob);
-                // };
-                // fileReader.readAsArrayBuffer(blob);
-
-
 
                 console.log("-----------------recorder stopped-----------------")
                 try {
