@@ -22,11 +22,10 @@ export default function useRecorder() {
                 method: 'POST',
                 body: formData
             };
-            await fetch(url, options).then(function (res){
-                console.dir(res.body)
+            await fetch(url, options).then(function (res) {
                 return res.json()
-            }).then(function (data){
-                console.log("ASR Response")
+            }).then(function (data) {
+                console.log("-----------------ASR Response-----------------")
                 console.log(data)
             });
         } catch (error) {
@@ -93,23 +92,30 @@ export default function useRecorder() {
             };
 
             recorder.onstop = async () => {
-                const blob = new Blob(chunks, {type: "audio/ogg; codecs=opus"});
+                // const blob = new Blob(chunks, {type: "audio/ogg; codecs=opus"});
+                const blob = new Blob(chunks, {type: 'audio/wav'});
+                console.log("-----------------blobData-----------------")
+                console.log(blob)
                 chunks = [];
 
-                console.log("recorder stopped")
+
+
+                // const WaveformData = require('waveform-data');
+                // const fileReader = new FileReader();
+                //
+                // fileReader.onload = function () {
+                //     const wav = new WaveformData(fileReader.result, WaveformData.adapters.object);
+                //     const wavBlob = new Blob([wav.toWav()], {type: 'audio/wav'});
+                //     console.log("wav file 'wavBlob'")
+                //     console.log(wavBlob);
+                // };
+                // fileReader.readAsArrayBuffer(blob);
+
+
+
+                console.log("-----------------recorder stopped-----------------")
                 try {
                     await postBlobFile(new URL("http://192.168.50.194:5000/recognize_audio"), blob)
-                    /*
-                    await fetch("http://192.168.50.194:5000/recognize_audio")
-                        .then((response) => {
-                            console.log("responseOutput" + response.json())
-                            response.json()
-                        })
-                        .then((data) => {
-                            console.log(data)
-                            // setTestResponseData(data)
-                        })
-                        */
                 } catch (e) {
                     console.log("fetch_error: " + e)
                 }
